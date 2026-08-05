@@ -10,8 +10,9 @@ python skipper.py
 A launcher also starts it without a terminal: double-click `run.exe`. It is not
 shipped in the repository; build it once with `python build_exe.py`.
 
-Stop with Ctrl+C. *La version française de cette page est dans
-[README.md](README.md), et un guide pas à pas dans [GUIDE.md](GUIDE.md).*
+Stop with Ctrl+C. A step-by-step guide is available in [GUIDE.md](GUIDE.md),
+in French; this page mostly explains **how it works**.
+*La version française de cette page est dans [README.md](README.md).*
 
 ## Requirements
 
@@ -138,6 +139,8 @@ python skipper.py --dry-run --debug
 confidence, which shows immediately whether the button was read as something odd
 (add a `--keyword`), read with low confidence (lower `--min-confidence`), or not
 read at all (it may have been moving — see Speed above).
+
+The [guide](GUIDE.md#6-dépannage) breaks each symptom down in a table, in French.
 
 ## Tests
 

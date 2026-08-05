@@ -138,6 +138,19 @@ plus longtemps que `--tick`, c'est la durée du passage qui fait la cadence.
 
 Le curseur est replacé là où vous l'aviez laissé après chaque clic.
 
+## Si un bouton est raté
+
+```bash
+python skipper.py --dry-run --debug
+```
+
+`debug/` contient alors la capture analysée, chaque texte encadré avec sa
+confiance OCR. On voit immédiatement si le bouton a été lu de travers (ajoutez
+un `--keyword`), lu avec une confiance trop faible (baissez `--min-confidence`),
+ou pas lu du tout (il bougeait peut-être encore — voir Vitesse ci-dessus).
+
+Le [guide](GUIDE.md#6-dépannage) détaille chaque symptôme dans un tableau.
+
 ## Tests
 
 ```bash
