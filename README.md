@@ -7,6 +7,10 @@ publicité devient ignorable.
 python skipper.py
 ```
 
+Un lanceur permet aussi de démarrer sans terminal : double-cliquez sur
+`run.exe`. Il n'est pas fourni dans le dépôt ; construisez-le une fois avec
+`python build_exe.py`.
+
 Arrêt avec Ctrl+C. Un guide pas à pas est disponible dans
 [GUIDE.md](GUIDE.md) ; cette page explique surtout **comment ça marche**.
 *An English version of this page is available in [README.en.md](README.en.md).*

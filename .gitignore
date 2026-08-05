@@ -1,6 +1,12 @@
 __pycache__/
 *.py[cod]
 
+# Binaire reconstructible : python build_exe.py
+run.exe
+build/
+dist/
+*.spec
+
 # Captures annotees produites par --debug
 debug/
 

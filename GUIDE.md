@@ -27,7 +27,28 @@ vérifie que le clic tomberait au bon endroit — il ne clique jamais nulle part
 
 ## 2. Lancement
 
-Le plus simple, qui surveille tous les écrans :
+### Avec le lanceur
+
+Double-cliquez sur `run.exe`, dans le dossier du projet. La fenêtre s'ouvre,
+l'outil démarre, et elle reste ouverte à la fin pour afficher le résultat.
+
+Le lanceur n'est pas fourni dans le dépôt. Il se construit en une commande :
+
+```bash
+python build_exe.py
+```
+
+Il ne contient que le lanceur, pas le projet : il exécute `skipper.py` avec le
+Python du système. Modifier le code ne demande donc pas de reconstruction. En
+revanche il doit rester dans le dossier du projet, à côté de `skipper.py`.
+
+Les options fonctionnent aussi :
+
+```bash
+run.exe --dry-run
+```
+
+### En ligne de commande
 
 ```bash
 python skipper.py

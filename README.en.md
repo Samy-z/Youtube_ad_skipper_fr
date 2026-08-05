@@ -7,6 +7,9 @@ skippable.
 python skipper.py
 ```
 
+A launcher also starts it without a terminal: double-click `run.exe`. It is not
+shipped in the repository; build it once with `python build_exe.py`.
+
 Stop with Ctrl+C. *La version française de cette page est dans
 [README.md](README.md), et un guide pas à pas dans [GUIDE.md](GUIDE.md).*
 
