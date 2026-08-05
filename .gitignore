@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+
+# Captures annotees produites par --debug
+debug/
+
+# Capture personnelle sans rapport avec le projet, conservee en local
+img/Screenshot 2025-08-31 220811.png
+
+.venv/
+venv/
+.pytest_cache/
