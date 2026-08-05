@@ -15,6 +15,17 @@ Arrêt avec Ctrl+C. Un guide pas à pas est disponible dans
 [GUIDE.md](GUIDE.md) ; cette page explique surtout **comment ça marche**.
 *An English version of this page is available in [README.en.md](README.en.md).*
 
+## Prérequis
+
+Windows, et Python 3.10 ou plus récent.
+
+```bash
+pip install -r requirements.txt
+```
+
+Aucun logiciel externe à installer : le modèle OCR arrive avec le paquet pip et
+tourne sur le processeur.
+
 ## Le principe
 
 L'outil **lit l'écran**. `rapidocr-onnxruntime` (un modèle OCR installable via
@@ -43,6 +54,9 @@ reconnaît que cette taille-là : changer d'écran, passer en plein écran ou en
 cinéma, ou une refonte de YouTube, et plus rien ne correspondait. La v0 essayait
 environ 400 copies redimensionnées par image, ce qui était lent et ratait quand
 même le bouton.
+
+Le dossier `legacy/` conserve ces fichiers à titre de référence ; aucun code ne
+les importe.
 
 ## Ce qui est reconnu comme le bouton
 
@@ -144,12 +158,3 @@ recapture exactement à ces coordonnées et confirme que le même texte s'y trou
 Il dessine aussi un faux bouton « Ignorer les annonces » et vérifie que le point
 de clic tombe sur le mot « Ignorer » plutôt qu'au milieu du libellé. Aucune
 publicité n'est nécessaire.
-
-## Prérequis
-
-```bash
-pip install -r requirements.txt
-```
-
-Windows uniquement (`winput.py` utilise l'API Win32). Le dossier `legacy/`
-conserve les fichiers de la v0 à titre de référence ; aucun code ne les importe.

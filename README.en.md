@@ -13,6 +13,17 @@ shipped in the repository; build it once with `python build_exe.py`.
 Stop with Ctrl+C. *La version française de cette page est dans
 [README.md](README.md), et un guide pas à pas dans [GUIDE.md](GUIDE.md).*
 
+## Requirements
+
+Windows, and Python 3.10 or newer.
+
+```bash
+pip install -r requirements.txt
+```
+
+No external software to install: the OCR model ships with the pip package and
+runs on the CPU.
+
 ## How it works
 
 It reads the screen. `rapidocr-onnxruntime` (a pip-only OCR model, no external
@@ -38,6 +49,8 @@ button at one specific size. Template matching only matches at that size, so
 anything that changed it — a different monitor, windowed vs. fullscreen, theater
 mode, a YouTube restyle — meant no match. v0's workaround tried ~400 rescaled
 copies of the template per frame, which was slow and still missed.
+
+`legacy/` holds those files for reference; nothing imports them.
 
 ## What counts as the button
 
@@ -144,12 +157,3 @@ already on screen, computes its global coordinates, re-grabs at exactly those
 coordinates and confirms the same text is there. It also draws a fake
 "Ignorer les annonces" button and confirms the click point lands on the word
 "Ignorer" rather than in the middle of the label. No ad needed.
-
-## Requirements
-
-```bash
-pip install -r requirements.txt
-```
-
-Windows only (`winput.py` is Win32). `legacy/` holds the v0 files for reference;
-nothing imports them.
