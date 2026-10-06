@@ -52,9 +52,14 @@ class IdleWatch:
     still, from frames pushed in by the scan loop.
 
     `observe(monitor, frame)` each tick; `idle()` answers whether both clocks
-    have exceeded the delay. After acting on it, call `rearm()`: the timers
-    restart, so a close that failed to change anything fires again one full
-    delay later instead of machine-gunning keystrokes.
+    have exceeded the delay. After acting on it, call `hold()`: the watch
+    then stays quiet until the user demonstrably came back (fresh keyboard or
+    mouse input), and only a NEW stretch of stillness after that can fire.
+
+    One firing per sleep, by design. Without the hold, every close reveals
+    the next tab, that tab is also static, and fifteen minutes later it gets
+    closed too -- repeat until the browser has no tabs left by morning. The
+    point is to end the one dead video, not to eat the session.
     """
 
     def __init__(
@@ -68,6 +73,7 @@ class IdleWatch:
         self._clock = clock
         self._thumbs: dict[int, np.ndarray] = {}
         self._last_change: dict[int, float] = {}
+        self._holding = False
 
     def observe(self, monitor: int, frame: np.ndarray) -> None:
         thumb = _thumbnail(frame)
@@ -89,13 +95,23 @@ class IdleWatch:
         return min(now - t for t in self._last_change.values())
 
     def idle(self) -> bool:
+        if self._holding:
+            # Fresh input means the user is back; a sleeping user's idle
+            # counter only ever grows.
+            if self._input_idle() > 60.0:
+                return False
+            self._holding = False
+            # The screen clocks restart too: being back must begin a whole
+            # new stretch of stillness, not inherit the overnight one.
+            now = self._clock()
+            for monitor in self._last_change:
+                self._last_change[monitor] = now
         return (self.screen_idle_seconds() >= self.delay
                 and self._input_idle() >= self.delay)
 
-    def rearm(self) -> None:
-        now = self._clock()
-        for monitor in self._last_change:
-            self._last_change[monitor] = now
+    def hold(self) -> None:
+        """Quiet the watch until the user has demonstrably returned."""
+        self._holding = True
 
 
 def close_media_tab(app: str = "opera", whole_window: bool = False) -> str | None:

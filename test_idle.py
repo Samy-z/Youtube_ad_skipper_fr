@@ -95,17 +95,34 @@ def test_change_resets_the_screen_clock():
     assert h.watch.idle()
 
 
-def test_rearm_waits_a_full_delay_before_firing_again():
+def test_hold_fires_once_per_sleep():
+    """After one firing, nothing more happens all night: each close reveals
+    the next static tab, and without the hold they would all be eaten."""
     h = Harness()
     for _ in range(16):
         h.tick(60, {1: frame(7)})
     assert h.watch.idle()
-    h.watch.rearm()
-    h.tick(60, {1: frame(7)})
+    h.watch.hold()
+    for second in range(480):  # eight more hours of static screens
+        h.tick(60, {1: frame(100 + second // 15)})  # a tab closes now and then
     assert not h.watch.idle()
-    for _ in range(15):
+
+
+def test_hold_releases_when_the_user_returns():
+    h = Harness()
+    for _ in range(16):
         h.tick(60, {1: frame(7)})
-    assert h.watch.idle()  # input was idle throughout; only the screen rearmed
+    assert h.watch.idle()
+    h.watch.hold()
+
+    h.input_idle = 2.0  # the user is back at the machine
+    h.tick(60, {1: frame(9)})
+    h.input_idle = 2.0
+    assert not h.watch.idle()  # released, but a NEW stretch must build up
+
+    for _ in range(20):  # user walks away again, same static screen
+        h.tick(60, {1: frame(9)})
+    assert h.watch.idle()  # a second sleep can fire a second time
 
 
 def test_no_frames_yet_is_not_idle():

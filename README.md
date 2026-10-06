@@ -171,6 +171,14 @@ frappe ne peut pas atterrir dans un autre programme. S'il est en
 arrière-plan, il est d'abord ramené devant. `--idle-window` remplace le
 Ctrl+W par Alt+F4.
 
+**Une seule fermeture par endormissement.** Ctrl+W ne ferme que l'onglet
+actif : celui de la vidéo, le reste de la session n'est pas touché. Après
+cette fermeture, la veille se tait jusqu'à ce que vous ayez vraiment repris
+la machine (une entrée clavier ou souris), et seule une nouvelle période
+d'immobilité complète peut déclencher à nouveau. Sans ce verrou, chaque
+onglet fermé révélerait le suivant, lui aussi immobile, et la session
+entière y passerait avant le matin.
+
 `--on-idle-close` lance ensuite une commande de votre choix : par exemple un
 script qui profite de l'écran libéré pour rendre le GPU à un calcul de nuit.
 

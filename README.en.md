@@ -160,6 +160,13 @@ once that browser verifiably holds the foreground — the keystroke cannot
 land in another program. If it sits in the background it is brought forward
 first. `--idle-window` swaps the Ctrl+W for Alt+F4.
 
+**One close per sleep.** Ctrl+W closes only the active tab — the video —
+and the rest of the session is left alone. After that one close the watch
+goes quiet until you have demonstrably come back (a keystroke or a mouse
+move), and only a fresh stretch of stillness after that can fire again.
+Without this latch, every closed tab would reveal the next one, equally
+still, and the whole session would be gone by morning.
+
 `--on-idle-close` then runs a command of your choice: for instance a script
 that uses the freed screen to hand the GPU back to an overnight job.
 

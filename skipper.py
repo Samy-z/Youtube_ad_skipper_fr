@@ -218,9 +218,10 @@ def main(argv: list[str] | None = None) -> int:
                             import subprocess
                             print(f"{stamp()}  running: {args.on_idle_close}")
                             subprocess.Popen(args.on_idle_close, shell=True)
-                # Either way, wait one full delay before trying again, so a
-                # close that changed nothing does not repeat every tick.
-                idle_watch.rearm()
+                # One firing per sleep: stay quiet until the user is back,
+                # whatever the close achieved. Repeating on a timer would
+                # close tab after revealed tab all night.
+                idle_watch.hold()
 
             elapsed = time.time() - started
             recent.append(elapsed)
