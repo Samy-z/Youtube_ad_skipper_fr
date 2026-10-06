@@ -135,8 +135,44 @@ plus longtemps que `--tick`, c'est la durée du passage qui fait la cadence.
 | `--dry-run` | inactif | Signale les détections sans cliquer. |
 | `--debug` | inactif | Écrit les captures annotées dans `debug/`. |
 | `--keep-mouse` | inactif | Laisse le curseur sur le bouton au lieu de le remettre en place. |
+| `--close-idle-after` | `0` | Ferme l'onglet vidéo après N minutes d'immobilité totale (0 = jamais). Voir ci-dessous. |
+| `--idle-app` | `opera` | Navigateur visé par la fermeture, par fragment du nom d'exécutable. |
+| `--idle-window` | inactif | Ferme la fenêtre entière (Alt+F4) au lieu de l'onglet (Ctrl+W). |
+| `--on-idle-close` | — | Commande shell lancée après une fermeture (libérer la machine pour un calcul, etc.). |
 
 Le curseur est replacé là où vous l'aviez laissé après chaque clic.
+
+## S'endormir devant une vidéo : `--close-idle-after`
+
+Le cas visé : on s'endort devant YouTube ou Netflix, la vidéo se termine ou la
+plateforme se met en pause toute seule (« Êtes-vous toujours là ? »), et le
+navigateur passe la nuit sur cet écran figé.
+
+```bash
+python skipper.py --close-idle-after 15
+```
+
+« Immobile » exige **les deux** conditions, chacune pendant tout le délai :
+
+- **l'écran ne change plus** — une vidéo en lecture se redessine en
+  permanence, donc tant que quelque chose se joue, rien ne se ferme :
+  s'endormir en plein film ne coupe pas le film. Mesuré sur les captures que
+  le programme fait déjà, réduites assez fort pour que l'horloge de la barre
+  des tâches ne compte pas comme de l'activité ;
+- **l'utilisateur ne touche plus la machine** — une page immobile qu'on *lit*
+  s'accompagne de molette et de souris, et la moindre entrée remet le
+  compteur à zéro. C'est ce qui empêche de fermer un article sous les yeux
+  de quelqu'un d'éveillé.
+
+La fermeture est un Ctrl+W envoyé au navigateur (en plein écran, il n'y a
+aucun bouton de fermeture à cliquer, alors que le raccourci marche partout),
+et uniquement quand ce navigateur tient vérifiablement le premier plan — la
+frappe ne peut pas atterrir dans un autre programme. S'il est en
+arrière-plan, il est d'abord ramené devant. `--idle-window` remplace le
+Ctrl+W par Alt+F4.
+
+`--on-idle-close` lance ensuite une commande de votre choix : par exemple un
+script qui profite de l'écran libéré pour rendre le GPU à un calcul de nuit.
 
 ## Si un bouton est raté
 
@@ -154,12 +190,14 @@ Le [guide](GUIDE.md#6-dépannage) détaille chaque symptôme dans un tableau.
 ## Tests
 
 ```bash
-python -m pytest test_matching.py -q
+python -m pytest test_matching.py test_idle.py -q
 ```
 
-couvre les règles d'acceptation et de rejet sur des sorties OCR réalistes, y
-compris les erreurs observées en conditions réelles (`gitignore`, lignes de
-prose mentionnant le mot).
+couvre d'une part les règles d'acceptation et de rejet sur des sorties OCR
+réalistes, y compris les erreurs observées en conditions réelles (`gitignore`,
+lignes de prose mentionnant le mot) ; d'autre part la décision d'immobilité
+sur des captures synthétiques et des horloges injectées : vidéo en lecture,
+page lue par un humain, horloge de la barre des tâches, double écran.
 
 ```bash
 python selftest.py

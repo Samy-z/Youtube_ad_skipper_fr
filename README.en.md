@@ -126,8 +126,42 @@ The program prints its real rate once it settles. If a sweep takes longer than
 | `--dry-run` | off | Report detections without clicking. |
 | `--debug` | off | Write annotated scans to `debug/`. |
 | `--keep-mouse` | off | Leave the cursor on the button instead of putting it back. |
+| `--close-idle-after` | `0` | Close the video tab after N minutes of total stillness (0 = never). See below. |
+| `--idle-app` | `opera` | Which browser to close, by executable-name substring. |
+| `--idle-window` | off | Close the whole window (Alt+F4) instead of the tab (Ctrl+W). |
+| `--on-idle-close` | — | Shell command to run after a close (reclaim the machine for batch work, etc.). |
 
 The cursor is returned to where you left it after each click.
+
+## Falling asleep in front of a video: `--close-idle-after`
+
+The case this exists for: you fall asleep in front of YouTube or Netflix, the
+video ends or the platform pauses itself ("are you still watching?"), and the
+browser spends the night on that frozen screen.
+
+```bash
+python skipper.py --close-idle-after 15
+```
+
+"Still" requires **both** of these, each for the full delay:
+
+- **the screen stopped changing** — a playing video repaints constantly, so
+  as long as something is actually showing, nothing closes: falling asleep
+  mid-film does not cut the film. Measured on the captures the program
+  already takes, downscaled hard enough that the taskbar clock does not
+  count as activity;
+- **the user stopped touching the machine** — a static page being *read*
+  comes with scrolls and mouse nudges, and any input resets the clock. This
+  is what keeps an article from being closed under an awake reader.
+
+The close is a Ctrl+W sent to the browser (in fullscreen there is no close
+button on screen to click, while the shortcut works everywhere), and only
+once that browser verifiably holds the foreground — the keystroke cannot
+land in another program. If it sits in the background it is brought forward
+first. `--idle-window` swaps the Ctrl+W for Alt+F4.
+
+`--on-idle-close` then runs a command of your choice: for instance a script
+that uses the freed screen to hand the GPU back to an overnight job.
 
 ## If it misses a button
 
@@ -145,11 +179,14 @@ The [guide](GUIDE.md#6-dépannage) breaks each symptom down in a table, in Frenc
 ## Tests
 
 ```bash
-python -m pytest test_matching.py -q
+python -m pytest test_matching.py test_idle.py -q
 ```
 
 covers the accept/reject rules against realistic OCR output, including the
-misfires seen in real runs (`gitignore`, prose lines mentioning the word).
+misfires seen in real runs (`gitignore`, prose lines mentioning the word),
+and the stillness decision against synthetic captures and injected clocks:
+playing video, a page being read by a human, the ticking taskbar clock, a
+second monitor.
 
 ```bash
 python selftest.py

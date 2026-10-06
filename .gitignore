@@ -16,3 +16,6 @@ img/Screenshot 2025-08-31 220811.png
 .venv/
 venv/
 .pytest_cache/
+
+# Crochets propres a une machine (--on-idle-close), jamais commites
+*.local.cmd

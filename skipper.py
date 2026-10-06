@@ -71,6 +71,25 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--min-similarity", type=float, default=0.90,
                         help="how close the read text must be to the keyword "
                              "(0.90 takes 'Ignorer' and 'Ignore', not 'Ignor')")
+    parser.add_argument("--close-idle-after", type=float, default=0.0,
+                        metavar="MINUTES",
+                        help="close the browser tab once the screen AND the "
+                             "user have both been still this long (default: "
+                             "0 = never). Playing video counts as activity, "
+                             "so this fires on the 'video over, everyone "
+                             "asleep' state, not mid-film")
+    parser.add_argument("--idle-app", default="opera",
+                        help="which program's tab to close, by executable "
+                             "name substring (default: opera). The keystroke "
+                             "is only sent when this program verifiably holds "
+                             "the foreground")
+    parser.add_argument("--idle-window", action="store_true",
+                        help="close the whole window (Alt+F4) instead of the "
+                             "tab (Ctrl+W)")
+    parser.add_argument("--on-idle-close", default=None, metavar="CMD",
+                        help="shell command to run after an idle close, e.g. "
+                             "a script that reclaims the machine for batch "
+                             "work")
     parser.add_argument("--dry-run", action="store_true",
                         help="log detections without moving or clicking")
     parser.add_argument("--debug", action="store_true",
@@ -99,12 +118,21 @@ def main(argv: list[str] | None = None) -> int:
         if targets[0] not in finder.monitors:
             parser.error(f"no monitor {targets[0]}; available: {finder.monitors}")
 
+    idle_watch = None
+    if args.close_idle_after > 0:
+        from idle import IdleWatch, close_media_tab
+        idle_watch = IdleWatch(args.close_idle_after)
+
     print(f"YouTube ad skipper -- started {time.ctime()}")
     for index in targets:
         print(f"  watching {finder.describe(index)}, region '{args.region}'")
     print(f"  looking for {list(args.keyword or ['ignorer'])}, "
           f"every {args.tick}s, for {args.hours}h"
           f"{' [DRY RUN]' if args.dry_run else ''}")
+    if idle_watch:
+        print(f"  closing {args.idle_app}'s "
+              f"{'window' if args.idle_window else 'tab'} after "
+              f"{args.close_idle_after:g} min of stillness")
     print("  Ctrl+C to stop\n")
 
     deadline = time.time() + 3600 * args.hours
@@ -123,6 +151,8 @@ def main(argv: list[str] | None = None) -> int:
             seen_now: set[tuple[str, int, int]] = set()
             for index in targets:
                 scan = finder.scan(index)
+                if idle_watch:
+                    idle_watch.observe(index, scan.frame)
 
                 if args.debug and (scan.hit is not None or debug_written < DEBUG_FILE_LIMIT):
                     # Hits are always kept; the routine misses stop once capped.
@@ -170,6 +200,27 @@ def main(argv: list[str] | None = None) -> int:
             if clicked_already is not None and clicked_already not in seen_now:
                 clicked_already = None  # it went away, so it may be clicked again
                 suppress_logged = False
+
+            if idle_watch and idle_watch.idle():
+                minutes = idle_watch.screen_idle_seconds() / 60
+                if args.dry_run:
+                    print(f"{stamp()}  idle for {minutes:.0f} min -- would close "
+                          f"{args.idle_app}'s tab [DRY RUN]")
+                else:
+                    done = close_media_tab(args.idle_app,
+                                           whole_window=args.idle_window)
+                    if done is None:
+                        print(f"{stamp()}  idle for {minutes:.0f} min, but no "
+                              f"{args.idle_app!r} window to close")
+                    else:
+                        print(f"{stamp()}  idle for {minutes:.0f} min -- {done}")
+                        if args.on_idle_close:
+                            import subprocess
+                            print(f"{stamp()}  running: {args.on_idle_close}")
+                            subprocess.Popen(args.on_idle_close, shell=True)
+                # Either way, wait one full delay before trying again, so a
+                # close that changed nothing does not repeat every tick.
+                idle_watch.rearm()
 
             elapsed = time.time() - started
             recent.append(elapsed)
