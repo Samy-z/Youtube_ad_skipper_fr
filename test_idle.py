@@ -108,6 +108,23 @@ def test_hold_fires_once_per_sleep():
     assert not h.watch.idle()
 
 
+def test_our_own_keystroke_does_not_release_the_hold():
+    """Field bug, 2026-10-07: the close sends Ctrl+W, synthetic input resets
+    Windows' last-input counter, and the latch read its own echo as 'the
+    user is back' -- then re-fired every delay, all night (35 closes). The
+    echo arrives within a second of hold(); a real return cannot be told
+    apart that fast, so everything inside the grace window stays held."""
+    h = Harness()
+    for _ in range(16):
+        h.tick(60, {1: frame(7)})
+    assert h.watch.idle()
+    h.watch.hold()
+    h.input_idle = 1.0  # the Ctrl+W we just sent, seen as fresh input
+    for _ in range(480):  # the rest of the night, screen static
+        h.tick(60, {1: frame(50)})
+    assert not h.watch.idle()
+
+
 def test_hold_releases_when_the_user_returns():
     h = Harness()
     for _ in range(16):
@@ -115,9 +132,11 @@ def test_hold_releases_when_the_user_returns():
     assert h.watch.idle()
     h.watch.hold()
 
-    h.input_idle = 2.0  # the user is back at the machine
-    h.tick(60, {1: frame(9)})
-    h.input_idle = 2.0
+    for _ in range(10):  # the night goes on, well past the echo grace
+        h.tick(60, {1: frame(8)})
+    h.input_idle = 2.0  # the user is genuinely back at the machine
+    h.tick(1, {1: frame(9)})
+    h.input_idle = 3.0
     assert not h.watch.idle()  # released, but a NEW stretch must build up
 
     for _ in range(20):  # user walks away again, same static screen

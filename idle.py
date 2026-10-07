@@ -74,6 +74,7 @@ class IdleWatch:
         self._thumbs: dict[int, np.ndarray] = {}
         self._last_change: dict[int, float] = {}
         self._holding = False
+        self._held_at = 0.0
 
     def observe(self, monitor: int, frame: np.ndarray) -> None:
         thumb = _thumbnail(frame)
@@ -97,7 +98,15 @@ class IdleWatch:
     def idle(self) -> bool:
         if self._holding:
             # Fresh input means the user is back; a sleeping user's idle
-            # counter only ever grows.
+            # counter only ever grows. But the close that set this hold
+            # SENT keystrokes, and synthetic input resets Windows' counter
+            # exactly like a human hand. For a grace period after the hold,
+            # fresh-looking input is our own echo, not a returning user --
+            # ignoring it is what stops a close from releasing its own
+            # latch and re-firing every delay all night (field bug,
+            # 2026-10-07: 35 closes between 06:11 and 14:38).
+            if self._clock() - self._held_at < 180.0:
+                return False
             if self._input_idle() > 60.0:
                 return False
             self._holding = False
@@ -112,6 +121,7 @@ class IdleWatch:
     def hold(self) -> None:
         """Quiet the watch until the user has demonstrably returned."""
         self._holding = True
+        self._held_at = self._clock()
 
 
 def close_media_tab(app: str = "opera", whole_window: bool = False) -> str | None:
